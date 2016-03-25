@@ -29,8 +29,8 @@ unsigned long additionalTimeMove[2] = { 40,40 };
 unsigned long preDelay[2] = { 5000,5000 };
 long currentDelay[2] = { 0,0 };
 int move[2] = { 0,0 };
-String modes[5] = { "Sudden Death","Fischer Delay","Bronstein Delay","Simple Delay","Hourglass" };
-String modesShort[5] = { "SuDe","FiDe","BrDe","SiDe","HoGl" };
+String modes[5] = { "Sudden Death","Simple Delay","Fischer Delay","Bronstein Delay","Hourglass" };
+String modesShort[5] = { "SuDe","SiDe","FiDe","BrDe","HoGl" };
 int mode = 3;
 int currentMove;
 int rotarySelectorValue;
@@ -97,12 +97,12 @@ byte customChar4[8] = {
 };
 
 void setup() {
-	prepareLcd(&lcd[WHITE]);
-	prepareLcd(&lcd[BLACK]);
 	rotaryButton.attach(11, INPUT_PULLUP);
 	pinMode(moveButton[WHITE], INPUT);
 	pinMode(moveButton[BLACK], INPUT);
 	rotarySelector.write(1000);
+	prepareLcd(&lcd[WHITE]);
+	prepareLcd(&lcd[BLACK]);
 }
 
 void prepareLcd(LiquidCrystal *lcd) {
@@ -140,8 +140,8 @@ void loop() {
 		}
 		if (setupModes[setupMode] == "GAMEMODE") {
 			readRotarySelector();
-			if (adjRSV % 5 != mode) {
-				mode = adjRSV % 5;
+			if (adjRSV % 2 != mode) {
+				mode = adjRSV % 2;
 				lcd[BLACK].clear();
 			}
 			lcd[WHITE].setCursor(0, 0);
@@ -171,8 +171,11 @@ void loop() {
 				lcd[BLACK].clear();
 				*timeSetups[timeSetupMode] = adjustedTime;
 				timeSetupMode++;
+				if (timeSetupMode % 2 != 0) {
+					*timeSetups[timeSetupMode] = adjustedTime;
+				}
 				rotarySelector.write(0);
-				if (timeSetupMode == 6)
+				if (timeSetupMode == 6 || (timeSetupMode == 4 && modes[mode] == "Sudden Death"))
 				{
 					interfaceMode = 1;
 				}
@@ -209,11 +212,11 @@ void loop() {
 		}
 	}
 	if (interfaceModes[interfaceMode] == "POSTGAME") {
-		if (currentMoveTime[BLACK] == 0) {
-			writeWin(BLACK);
+		if (moveTime[BLACK] == 0) {
+			writeWin(WHITE);
 		}
 		else {
-			writeWin(WHITE);
+			writeWin(BLACK);
 		}
 	}
 }
